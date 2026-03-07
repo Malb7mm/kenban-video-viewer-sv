@@ -1,8 +1,9 @@
+# https://gemini.google.com/share/7b14ed7ce8c8
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: 'master'
+    branches: 'main'
 
 permissions:
   contents: read
