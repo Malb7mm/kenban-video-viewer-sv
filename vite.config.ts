@@ -8,4 +8,5 @@ export default defineConfig({
     svelte(),
     tailwindcss(),
   ],
+  base: "/kenban-video-viewer-sv/",
 })
