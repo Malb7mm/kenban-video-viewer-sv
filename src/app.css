@@ -1,0 +1,31 @@
+@import "tailwindcss" prefix(tw);
+
+@theme {
+  --color-p50: #fafafa;
+  --color-p100: #f4f4f5;
+  --color-p200: #e4e5e7;
+  --color-p300: #d4d6d8;
+  --color-p400: #a2a5a9;
+  --color-p500: #727579;
+  --color-p600: #5d6065;
+  --color-p700: #404245;
+  --color-p800: #27282a;
+  --color-p900: #18191b;
+  --color-p950: #090a0b;
+}
+
+:root {
+  font-family: Roboto, Avenir, 'Helvetica Neue', Helvetica, Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDPGothic', 'Noto Sans JP', Meiryo, 'Yu Gothic Medium', YuGothic, 'MS PGothic',sans-serif;
+  text-autospace: normal;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+
+  background-color: #fff;
+}
