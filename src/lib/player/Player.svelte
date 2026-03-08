@@ -1,6 +1,6 @@
 <script lang="ts">
-  import SpeedIcon from "../assets/SpeedIcon.svelte";
-  import VolumeIcon from "../assets/VolumeIcon.svelte";
+  import SpeedIcon from "../../assets/SpeedIcon.svelte";
+  import VolumeIcon from "../../assets/VolumeIcon.svelte";
   import SeekBar from "./SeekBar.svelte";
   import VerticalSlider from "./VerticalSlider.svelte";
   import VideoWrapper from "./VideoWrapper.svelte";

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ChevronLeft from "../assets/ChevronLeft.svelte";
-  import ChevronRight from "../assets/ChevronRight.svelte";
+  import ChevronLeft from "../../assets/ChevronLeft.svelte";
+  import ChevronRight from "../../assets/ChevronRight.svelte";
 
   let isOpen: boolean = $state(false);
 </script>
