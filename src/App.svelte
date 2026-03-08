@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Drawer from "./lib/Drawer.svelte";
   import Player from "./lib/Player.svelte";
 
   let player: Player;
@@ -16,5 +17,8 @@
     <Player 
       bind:this={player}
     ></Player>
+  </div>
+  <div class="tw:absolute tw:size-full tw:inset-0 tw:pointer-events-none">
+    <Drawer></Drawer>
   </div>
 </main>

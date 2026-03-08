@@ -111,7 +111,7 @@
         onmouseenter={() => {showSpeedSlider = true;}}
         onmouseleave={() => {showSpeedSlider = false;}}
       >
-        <SpeedIcon size={14}></SpeedIcon>
+        <SpeedIcon size={14} color="var(--tw-color-p200)"></SpeedIcon>
         {#if showSpeedSlider}
           <div class="vertical-slider-container">
             <div>{speed}</div>
@@ -126,7 +126,7 @@
         onmouseenter={() => {showVolumeSlider = true;}}
         onmouseleave={() => {showVolumeSlider = false;}}
       >
-        <VolumeIcon size={14}></VolumeIcon>
+        <VolumeIcon size={14} color="var(--tw-color-p200)"></VolumeIcon>
         {#if showVolumeSlider}
           <div class="vertical-slider-container">
             <div>{volume}</div>
@@ -187,7 +187,7 @@
 
 .seekbar-side-button {
   @apply tw:grid tw:place-items-center
-         tw:bg-p700 tw:hover:bg-p800 tw:text-xs tw:text-p100 
+         tw:bg-p700 tw:hover:bg-p800 tw:text-xs tw:text-p200 
          tw:inset-shadow-[0_0_0.5rem] tw:inset-shadow-p900 tw:select-none;
 }
 

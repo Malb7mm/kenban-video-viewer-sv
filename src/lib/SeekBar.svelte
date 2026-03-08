@@ -75,7 +75,8 @@
   {#if showToolTip}
     <div
       class="tw:bg-p800 tw:text-p300 tw:pointer-events-none tw:whitespace-nowrap
-             tw:absolute tw:-translate-x-1/2 tw:bottom-full tw:text-sm tw:px-2"
+             tw:absolute tw:-translate-x-1/2 tw:bottom-full tw:text-sm tw:px-2
+             tw:inset-shadow-[0_0_0.5rem] tw:inset-shadow-p950"
       style:left="{hoverX}px">
       {hoverText}
     </div>
