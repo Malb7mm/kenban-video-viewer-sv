@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let { onload, ontimeupdate, }: {
+  let { paused = $bindable(true), onload, ontimeupdate, }: {
+    paused?: boolean,
     onload?: () => void,
     ontimeupdate?: (time: number) => void,
   } = $props();
@@ -54,6 +55,7 @@
 
   const handleYoutubeStateChange = (e: YT.OnStateChangeEvent) => {
     if (youtubePlayer === undefined) return;
+    paused = e.data === YT.PlayerState.PAUSED;
     if (e.data === YT.PlayerState.PLAYING && youtubePlayer.getVideoUrl() !== youtubeCurrentId) {
       youtubeCurrentId = youtubePlayer.getVideoUrl();
       youtubePlayer.pauseVideo();
@@ -193,7 +195,16 @@
     if (loadState === "YouTube" && youtubePlayer !== undefined) {
       youtubePlayer.setPlaybackRate(rate);
     }
-  }
+  };
+
+  export const isPlaybackCompleted = () => {
+    if (loadState === "Local" && videoEl !== undefined) {
+      return videoEl.ended;
+    }
+    if (loadState === "YouTube" && youtubePlayer !== undefined) {
+      return youtubePlayer.getPlayerState() === YT.PlayerState.ENDED;
+    }
+  };
 
   const handleFileLoad = () => {
     onload?.();
@@ -220,7 +231,10 @@
       class="tw:size-full tw:object-contain" 
       src={videoSrc}
       bind:this={videoEl}
-      onloadedmetadata={handleFileLoad}
+      onloadedmetadata={() => { paused = true; handleFileLoad(); }}
+      onplay={() => { paused = false; }}
+      onpause={() => { paused = true; }}
+      onended={() => { paused = true; }}
     ></video>
   </div>
 

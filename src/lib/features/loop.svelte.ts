@@ -6,8 +6,10 @@ export type LoopItem = {
 };
 
 export const createLoopSystem = () => {
-  let seekHandlers: ((time: number) => void)[] = [];
+  let callbacksOnSeek: ((time: number) => void)[] = [];
+  let callbacksOnResume: (() => void)[] = [];
   let getTime: (() => number) | undefined;
+  let isPlaybackCompleted: (() => boolean) | undefined;
   let items: LoopItem[] = $state([]);
   let currentIndex: number | undefined = $state(undefined);
   let isEnabled = $state(false);
@@ -23,13 +25,16 @@ export const createLoopSystem = () => {
   const trySeek = () => {
     if (currentIndex === undefined) return;
     if (getTime === undefined) return;
+    if (isPlaybackCompleted === undefined) return;
     const time = getTime();
+    const completed = isPlaybackCompleted();
     const loopItem = items[currentIndex];
 
     const MARGIN = 0.1;
-    const isOutOfRange = time < (loopItem.from - MARGIN) || (loopItem.to + MARGIN) < time;
+    const isOutOfRange = time < (loopItem.from - MARGIN) || (loopItem.to + MARGIN) < time || completed;
     if (isOutOfRange) {
-      seekHandlers.forEach(f => { f(loopItem.from); });
+      callbacksOnSeek.forEach(f => f(loopItem.from));
+      if (completed) callbacksOnResume.forEach(f => f());
     }
   };
 
@@ -78,7 +83,11 @@ export const createLoopSystem = () => {
 
   const setTimeProvider = (callback: typeof getTime) => {
     getTime = callback;
-  }
+  };
+
+  const setCompletedStateProvider = (callback: typeof isPlaybackCompleted) => {
+    isPlaybackCompleted = callback;
+  };
 
   // observing: isEnabled
   $effect(() => {
@@ -97,8 +106,11 @@ export const createLoopSystem = () => {
     moveItem,
     updateItem,
     setTimeProvider,
-    set seekHandlers(v: typeof seekHandlers) { seekHandlers = v; },
-    get seekHandlers() { return seekHandlers; },
+    setCompletedStateProvider,
+    set callbacksOnSeek(v: typeof callbacksOnSeek) { callbacksOnSeek = v; },
+    get callbacksOnSeek() { return callbacksOnSeek; },
+    set callbacksOnResume(v: typeof callbacksOnResume) { callbacksOnResume = v; },
+    get callbacksOnResume() { return callbacksOnResume; },
     set index(v: number | undefined) { setIndex(v); },
     get index() { return currentIndex; },
     get items(): readonly Readonly<LoopItem>[] { return items; },
