@@ -11,7 +11,6 @@
   const loopSystem = getContext<LoopSystem>("loopSystem");
   const sharedMetadata = getContext<SharedMetadata>("sharedMetadata");
   let duration = $derived(sharedMetadata?.duration || 0);
-  $inspect(duration).with(console.log);
 
   let inputEl: HTMLInputElement | undefined = $state(undefined);
   let hoverText: string = $state("");

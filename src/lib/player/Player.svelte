@@ -66,7 +66,6 @@
     showSplash = false;
     isLoaded = true;
     sharedMetadata.duration = videoWrapperEl?.getDuration() || 0;
-    console.log(sharedMetadata.duration);
     handleVolumeUpdate(volume);
     handleSpeedUpdate(speed);
     const paused = videoWrapperEl?.getPaused();
