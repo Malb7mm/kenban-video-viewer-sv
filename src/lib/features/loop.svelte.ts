@@ -27,7 +27,6 @@ export const createLoopSystem = () => {
     const loopItem = items[currentIndex];
 
     const isOutOfRange = time < loopItem.from || loopItem.to < time;
-    console.log(time,loopItem);
     if (isOutOfRange) {
       seekHandlers.forEach(f => { f(loopItem.from); });
     }
