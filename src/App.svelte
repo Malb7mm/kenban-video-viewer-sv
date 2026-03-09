@@ -1,21 +1,28 @@
 <script lang="ts">
-  import Drawer from "./lib/Drawer.svelte";
-  import Player from "./lib/Player.svelte";
+  import Drawer from "./lib/drawer/Drawer.svelte";
+  import Player from "./lib/player/Player.svelte";
+  import { createLoopSystem } from "./lib/features/loop.svelte";
+  import { setContext } from "svelte";
+  import { createSharedMetadata } from "./lib/common/utils";
 
-  let player: Player;
+  let playerEl: Player | undefined = $state(undefined);
 
-  const preventDefault = (e: Event) => {e.preventDefault();};
+  const loopSystem = createLoopSystem();
+  setContext("loopSystem", loopSystem);
+
+  const sharedMetadata = $state(createSharedMetadata());
+  setContext("sharedMetadata", sharedMetadata);
 </script>
 
 <main 
   class="tw:relative tw:size-full tw:bg-p900
          tw:flex tw:flex-col" 
-  ondragenter={preventDefault} 
-  ondragover={preventDefault} 
-  ondrop={player.handleFileDrop}>
+  ondragenter={(e: Event) => { e.preventDefault(); }} 
+  ondragover={(e: Event) => { e.preventDefault(); }} 
+  ondrop={playerEl?.handleFileDrop}>
   <div class="tw:size-full">
     <Player 
-      bind:this={player}
+      bind:this={playerEl}
     ></Player>
   </div>
   <div class="tw:absolute tw:size-full tw:inset-0 tw:pointer-events-none">

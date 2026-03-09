@@ -1,8 +1,27 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import ChevronLeft from "../../assets/ChevronLeft.svelte";
   import ChevronRight from "../../assets/ChevronRight.svelte";
+  import LoopItemList from "./LoopItemList.svelte";
+  import type { LoopSystem } from "../features/loop.svelte";
+  import PlusIcon from "../../assets/PlusIcon.svelte";
+  import Toggle from "../common/Toggle.svelte";
+  import TextLinkButton from "../common/TextLinkButton.svelte";
+  import type { SharedMetadata } from "../common/utils";
+
+  const loopSystem = getContext<LoopSystem>("loopSystem");
+  const sharedMetadata = getContext<SharedMetadata>("sharedMetadata");
+  let duration = $derived(sharedMetadata?.duration || 0);
 
   let isOpen: boolean = $state(false);
+
+  const addLoopItem = () => {
+    loopSystem.addItem({ from: 0, to: duration, label: "新規ループアイテム" });
+  };
+
+  const deselectLoopItem = () => {
+    loopSystem.index = undefined;
+  }
 </script>
 
 <div 
@@ -13,6 +32,36 @@
 >
   <!--背景-->
   <div class="tw:size-full tw:bg-p800 tw:opacity-95 tw:rounded-bl-lg"></div>
+
+  <!--中身-->
+  <div
+    class="tw:absolute tw:inset-6
+           tw:flex tw:flex-col tw:gap-10 tw:overflow-y-scroll"
+  >
+    <section
+      class="tw:mx-4 tw:h-50"
+    >
+      <div class="tw:flex tw:flex-row tw:relative">
+        <Toggle bind:checked={loopSystem.enabled}>
+          ループ再生
+        </Toggle>
+        <div class="tw:absolute tw:right-10">
+          <TextLinkButton onclick={deselectLoopItem}>選択解除</TextLinkButton>
+        </div>
+        <button
+          class="tw:absolute tw:right-1 tw:h-5 tw:w-5 tw:rounded-md
+                 tw:bg-p700 tw:hover:bg-p800
+                 tw:grid tw:place-items-center"
+          onclick={addLoopItem}
+        >
+          <PlusIcon size={14} color="var(--tw-color-p200)"></PlusIcon>
+        </button>
+      </div>
+      <div class="tw:size-full tw:overflow-y-scroll">
+        <LoopItemList></LoopItemList>
+      </div>
+    </section>
+  </div>
 
   <!--開閉ハンドル-->
   <button
