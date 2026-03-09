@@ -12,16 +12,31 @@
   --color-p800: #27282a;
   --color-p900: #18191b;
   --color-p950: #090a0b;
+  --color-s50: #fbf7fc;
+  --color-s100: #f6eff8;
+  --color-s200: #eddef0;
+  --color-s300: #dfc3e4;
+  --color-s400: #cc9fd3;
+  --color-s500: #b378bd;
+  --color-s600: #a166a9;
+  --color-s700: #7d4883;
+  --color-s800: #683c6c;
+  --color-s900: #58355a;
+  --color-s950: #361a38;
 }
 
 :root {
-  font-family: Roboto, Avenir, 'Helvetica Neue', Helvetica, Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDPGothic', 'Noto Sans JP', Meiryo, 'Yu Gothic Medium', YuGothic, 'MS PGothic',sans-serif;
+  font-family: Avenir, 'Helvetica Neue', Helvetica, Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'BIZ UDPGothic', 'Noto Sans JP', Meiryo, 'Yu Gothic Medium', YuGothic, 'MS PGothic',sans-serif;
   text-autospace: normal;
+  color-scheme: only dark;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--tw-color-p500) var(--tw-color-p800);
 }
 
 body {

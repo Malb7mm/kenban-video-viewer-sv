@@ -12,7 +12,7 @@
   let youtubeDivEl: HTMLDivElement | undefined = $state(undefined);
   let youtubePlayer: YT.Player | undefined = $state(undefined);
   let youtubeReady: boolean = $state(false);
-  let youtubePlaying: boolean = $state(true);
+  let youtubeCurrentId: string = $state("");
   let timeUpdateIntervalId: number | undefined = undefined;
 
   onMount(() => {
@@ -30,6 +30,7 @@
         },
         events: {
           onReady: () => { youtubeReady = true; },
+          onStateChange: handleYoutubeStateChange,
         }
       });
     };
@@ -50,6 +51,15 @@
       }
     }
   });
+
+  const handleYoutubeStateChange = (e: YT.OnStateChangeEvent) => {
+    if (youtubePlayer === undefined) return;
+    if (e.data === YT.PlayerState.PLAYING && youtubePlayer.getVideoUrl() !== youtubeCurrentId) {
+      youtubeCurrentId = youtubePlayer.getVideoUrl();
+      youtubePlayer.pauseVideo();
+      handleFileLoad();
+    }
+  }
 
   export const loadFile = (file: File) => {
     if (!file.type.startsWith("video/")) {
@@ -72,7 +82,6 @@
     }
     if (loadState === "YouTube" && youtubePlayer !== undefined) {
       youtubePlayer.playVideo();
-      youtubePlaying = true;
     }
   };
 
@@ -82,7 +91,6 @@
     }
     if (loadState === "YouTube" && youtubePlayer !== undefined) {
       youtubePlayer.pauseVideo();
-      youtubePlaying = false;
     }
   };
 
@@ -92,7 +100,7 @@
       result = videoEl.paused;
     }
     if (loadState === "YouTube" && youtubePlayer !== undefined) {
-      result = !youtubePlaying;
+      result = youtubePlayer.getPlayerState() === YT.PlayerState.PAUSED;
     }
     return result;
   };
@@ -107,13 +115,12 @@
       }
     }
     if (loadState === "YouTube" && youtubePlayer !== undefined) {
-      if (!youtubePlaying) {
+      if (youtubePlayer.getPlayerState() === YT.PlayerState.PAUSED) {
         youtubePlayer.playVideo();
       }
       else {
         youtubePlayer.pauseVideo();
       }
-      youtubePlaying = !youtubePlaying;
     }
   };
 

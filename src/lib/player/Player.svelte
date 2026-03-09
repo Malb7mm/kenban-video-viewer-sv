@@ -1,15 +1,22 @@
 <script lang="ts">
-  import SpeedIcon from "../assets/SpeedIcon.svelte";
-  import VolumeIcon from "../assets/VolumeIcon.svelte";
+  import { getContext, onMount } from "svelte";
+  import SpeedIcon from "../../assets/SpeedIcon.svelte";
+  import VolumeIcon from "../../assets/VolumeIcon.svelte";
   import SeekBar from "./SeekBar.svelte";
   import VerticalSlider from "./VerticalSlider.svelte";
   import VideoWrapper from "./VideoWrapper.svelte";
+  import type { LoopSystem } from "../features/loop.svelte";
+  import TextLinkButton from "../common/TextLinkButton.svelte";
+  import type { SharedMetadata } from "../common/utils";
+
+  const loopSystem = getContext<LoopSystem>("loopSystem");
+  const sharedMetadata = getContext<SharedMetadata>("sharedMetadata");
 
   let fileInputEl: HTMLInputElement;
   let youtubeUrlText: string = $state("");
   let videoWrapperEl: VideoWrapper | undefined = $state(undefined);
   let seekBarEl: SeekBar;
-  let duration: number = $state(0);
+  let currentTime: number = $state(0);
   let showSplash: boolean = $state(true);
   let isLoaded: boolean = $state(false);
   let playButtonText: string = $state("-");
@@ -55,20 +62,20 @@
     return match ? match[1] : undefined;
   }
 
-  // シークバーの処理
   const handleLoaded = () => {
     showSplash = false;
     isLoaded = true;
-    duration = videoWrapperEl?.getDuration() || 0;
+    sharedMetadata.duration = videoWrapperEl?.getDuration() || 0;
+    console.log(sharedMetadata.duration);
     handleVolumeUpdate(volume);
     handleSpeedUpdate(speed);
     const paused = videoWrapperEl?.getPaused();
     if (paused !== undefined) {
       playButtonText = paused ? "play" : "pause";
     }
+    loopSystem.setTimeProvider(() => videoWrapperEl?.getTime() || 0);
   };
 
-  // シークバーの処理
   const handlePlayButton = () => {
     videoWrapperEl?.toggle();
     const paused = videoWrapperEl?.getPaused();
@@ -84,7 +91,6 @@
 
   const handleTimeUpdate = (value: number) => {
     seekBarEl?.setProgress(value);
-    duration = videoWrapperEl?.getDuration() || 0;
   }
 
   const handleVolumeUpdate = (value: number) => {
@@ -94,6 +100,16 @@
   const handleSpeedUpdate = (value: number) => {
     videoWrapperEl?.setSpeed(value);
   }
+
+  onMount(() => {
+    loopSystem.seekHandlers.push(handleSeeked);
+    loopSystem.seekHandlers.push(handleTimeUpdate);
+
+    return (() => {
+      loopSystem.seekHandlers.splice(loopSystem.seekHandlers.indexOf(handleSeeked), 1);
+      loopSystem.seekHandlers.splice(loopSystem.seekHandlers.indexOf(handleTimeUpdate), 1);
+    });
+  });
 </script>
 
 <div class="tw:size-full tw:relative">
@@ -105,20 +121,22 @@
     <div class="tw:w-full tw:grow tw:min-h-0">
       <VideoWrapper bind:this={videoWrapperEl} onload={handleLoaded} ontimeupdate={handleTimeUpdate}></VideoWrapper>
     </div>
-    <div class="tw:w-full tw:h-5 tw:flex" style:visibility={isLoaded ? "visible" : "hidden"}>
+    <div class="tw:w-full tw:h-5 tw:flex" style:visibility={isLoaded ? "visible" : "hidden"} draggable="false">
       <button 
         class="seekbar-side-button tw:w-9 tw:relative"
         onmouseenter={() => {showSpeedSlider = true;}}
         onmouseleave={() => {showSpeedSlider = false;}}
       >
-        <SpeedIcon size={14}></SpeedIcon>
+        <SpeedIcon size={14} color="var(--tw-color-p200)"></SpeedIcon>
         {#if showSpeedSlider}
           <div class="vertical-slider-container">
-            <div>{speed}</div>
+            <div class="tw:text-p100 tw:bg-p950 tw:opacity-80 tw:px-1">{speed}</div>
             <div class="tw:h-40">
               <VerticalSlider min={0.4} max={1.6} step={0.05} bind:value={speed} onchange={handleSpeedUpdate}></VerticalSlider>
             </div>
           </div>
+        {:else}
+          <div class="tw:absolute tw:bottom-full tw:text-p100 tw:bg-p950 tw:opacity-80 tw:px-1">{speed}</div>
         {/if}
       </button>
       <button 
@@ -126,21 +144,23 @@
         onmouseenter={() => {showVolumeSlider = true;}}
         onmouseleave={() => {showVolumeSlider = false;}}
       >
-        <VolumeIcon size={14}></VolumeIcon>
+        <VolumeIcon size={14} color="var(--tw-color-p200)"></VolumeIcon>
         {#if showVolumeSlider}
           <div class="vertical-slider-container">
-            <div>{volume}</div>
+            <div class="tw:text-p100 tw:bg-p950 tw:opacity-80 tw:px-1">{volume}</div>
             <div class="tw:h-30">
               <VerticalSlider min={0} max={100} step={1} bind:value={volume} onchange={handleVolumeUpdate}></VerticalSlider>
             </div>
           </div>
+        {:else}
+          <div class="tw:absolute tw:bottom-full tw:text-p100 tw:bg-p950 tw:opacity-80 tw:px-1">{volume}</div>
         {/if}
       </button>
       <button class="seekbar-side-button tw:cursor-pointer tw:w-16"
               onclick={handlePlayButton}>
         <span>{playButtonText}</span>
       </button>
-      <SeekBar bind:this={seekBarEl} duration={duration} onseeked={handleSeeked}></SeekBar>
+      <SeekBar bind:this={seekBarEl} currentTime={currentTime} onseeked={handleSeeked}></SeekBar>
     </div>
   </div>
 
@@ -153,14 +173,14 @@
     <ul class="tw:list-disc tw:list-inside">
       <li>
         動画ファイルをドロップ （もしくは 
-        <button class="textlink-button" onclick={() => fileInputEl.click()}>選択</button>
+        <TextLinkButton onclick={handleFileOpen}>選択</TextLinkButton>
         ）
       </li>
       <li>
         YouTubeの動画リンクを入力<br>
         <div class="tw:inline-flex tw:items-center tw:gap-2 tw:pl-5">
           <input type="text" class="tw:bg-p800 tw:text-sm" placeholder="https://..." bind:value={youtubeUrlText}> 
-          <button class="textlink-button" onclick={handleYoutubeOpen}>Go</button>
+          <TextLinkButton onclick={handleYoutubeOpen}>Go</TextLinkButton>
         </div>
       </li>
     </ul>
@@ -168,26 +188,11 @@
 </div>
 
 <style>
-.textlink-button {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-
-  color: #b8c4ff;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.textlink-button:hover {
-  color: #6982ff;
-}
-
-@reference "../app.css";
+@reference "../../app.css";
 
 .seekbar-side-button {
   @apply tw:grid tw:place-items-center
-         tw:bg-p700 tw:hover:bg-p800 tw:text-xs tw:text-p100 
+         tw:bg-p700 tw:hover:bg-p800 tw:text-xs tw:text-p200 
          tw:inset-shadow-[0_0_0.5rem] tw:inset-shadow-p900 tw:select-none;
 }
 
