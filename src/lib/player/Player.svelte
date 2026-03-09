@@ -19,11 +19,12 @@
   let currentTime: number = $state(0);
   let showSplash: boolean = $state(true);
   let isLoaded: boolean = $state(false);
-  let playButtonText: string = $state("-");
+  let isPaused: boolean = $state(false);
   let showVolumeSlider: boolean = $state(false);
   let showSpeedSlider: boolean = $state(false);
   let volume: number = $state(30);
   let speed: number = $state(1);
+  let playButtonText: string = $derived(isPaused ? "play" : "pause");
 
   // D&Dされたファイルを受け取る
   export const handleFileDrop = (event: DragEvent) => {
@@ -68,19 +69,12 @@
     sharedMetadata.duration = videoWrapperEl?.getDuration() || 0;
     handleVolumeUpdate(volume);
     handleSpeedUpdate(speed);
-    const paused = videoWrapperEl?.getPaused();
-    if (paused !== undefined) {
-      playButtonText = paused ? "play" : "pause";
-    }
     loopSystem.setTimeProvider(() => videoWrapperEl?.getTime() || 0);
+    loopSystem.setCompletedStateProvider(() => videoWrapperEl?.isPlaybackCompleted() || false);
   };
 
   const handlePlayButton = () => {
     videoWrapperEl?.toggle();
-    const paused = videoWrapperEl?.getPaused();
-    if (paused !== undefined) {
-      playButtonText = paused ? "play" : "pause";
-    }
   };
 
   // シークバーの処理
@@ -92,6 +86,13 @@
     seekBarEl?.setProgress(value);
   }
 
+  const handleResumeRequested = () => {
+    // 雑YouTube対策
+    setTimeout(() => {
+      videoWrapperEl?.play();
+    }, 100);
+  }
+
   const handleVolumeUpdate = (value: number) => {
     videoWrapperEl?.setVolume(value);
   }
@@ -101,12 +102,13 @@
   }
 
   onMount(() => {
-    loopSystem.seekHandlers.push(handleSeeked);
-    loopSystem.seekHandlers.push(handleTimeUpdate);
+    loopSystem.callbacksOnSeek.push(handleSeeked);
+    loopSystem.callbacksOnSeek.push(handleTimeUpdate);
+    loopSystem.callbacksOnResume.push(handleResumeRequested);
 
     return (() => {
-      loopSystem.seekHandlers.splice(loopSystem.seekHandlers.indexOf(handleSeeked), 1);
-      loopSystem.seekHandlers.splice(loopSystem.seekHandlers.indexOf(handleTimeUpdate), 1);
+      loopSystem.callbacksOnSeek = loopSystem.callbacksOnSeek.filter(f => f !== handleSeeked && f !== handleTimeUpdate);
+      loopSystem.callbacksOnResume = loopSystem.callbacksOnResume.filter(f => f !== handleResumeRequested);
     });
   });
 </script>
@@ -118,7 +120,7 @@
   <!--video player-->
   <div class="tw:size-full tw:flex tw:flex-col">
     <div class="tw:w-full tw:grow tw:min-h-0">
-      <VideoWrapper bind:this={videoWrapperEl} onload={handleLoaded} ontimeupdate={handleTimeUpdate}></VideoWrapper>
+      <VideoWrapper bind:this={videoWrapperEl} bind:paused={isPaused} onload={handleLoaded} ontimeupdate={handleTimeUpdate}></VideoWrapper>
     </div>
     <div class="tw:w-full tw:h-5 tw:flex" style:visibility={isLoaded ? "visible" : "hidden"} draggable="false">
       <button 
